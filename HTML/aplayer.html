@@ -77,26 +77,49 @@ html, body {
         height: 36px !important;
         line-height: 36px !important;
     }
-    /* 迷你播放器移动端适配 - 只缩小尺寸，不破坏原有布局 */
+    /* 迷你播放器移动端适配 - 用 flexbox 重写布局 */
+    .aplayer.aplayer-fixed.aplayer-mini {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-body {
-        flex-wrap: nowrap !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-right: 0 !important;
+        height: 60px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic {
         width: 50px !important;
         height: 50px !important;
         min-width: 50px !important;
+        float: none !important;
+        flex-shrink: 0 !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play {
         width: 26px !important;
         height: 26px !important;
-        margin: -13px 0 0 -13px !important;
+        margin: -13px -13px 0 0 !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play svg {
         width: 16px !important;
         height: 16px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-info {
-        padding: 6px 8px !important;
+        margin-left: 0 !important;
+        padding: 4px 8px !important;
+        height: 50px !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        transform: none !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-music {
+        height: 16px !important;
+        line-height: 16px !important;
+        margin: 0 0 4px 0 !important;
+        width: 100% !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-title {
         font-size: 12px !important;
@@ -104,10 +127,27 @@ html, body {
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-author {
         display: none !important;
     }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon {
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-controller {
+        display: flex !important;
+        align-items: center !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-bar-wrap {
+        flex: 1 !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+    /* 覆盖 APlayer fixed 模式的绝对定位，改为普通流 */
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon-back,
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon-play,
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon-forward,
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon-menu {
+        position: static !important;
+        right: auto !important;
+        bottom: auto !important;
         width: 20px !important;
         height: 20px !important;
-        margin-left: 2px !important;
+        margin: 0 2px !important;
+        flex-shrink: 0 !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon svg {
         width: 16px !important;
@@ -117,8 +157,16 @@ html, body {
         display: none !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-time {
+        display: flex !important;
+        align-items: center !important;
         font-size: 10px !important;
-        min-width: 0 !important;
+        padding: 0 !important;
+        height: 17px !important;
+        margin-left: 4px !important;
+        flex-shrink: 0 !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-miniswitcher {
+        display: none !important;
     }
 }
 </style>
