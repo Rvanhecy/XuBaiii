@@ -77,68 +77,48 @@ html, body {
         height: 36px !important;
         line-height: 36px !important;
     }
-    /* 迷你播放器移动端适配 */
+    /* 迷你播放器移动端适配 - 只缩小尺寸，不破坏原有布局 */
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-body {
         flex-wrap: nowrap !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic {
-        width: 48px !important;
-        height: 48px !important;
-        min-width: 48px !important;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play {
-        width: 28px !important;
-        height: 28px !important;
-        margin: -14px 0 0 -14px !important;
+        width: 26px !important;
+        height: 26px !important;
+        margin: -13px 0 0 -13px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play svg {
         width: 16px !important;
         height: 16px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-info {
-        padding: 6px 8px 6px 8px !important;
-        height: 48px !important;
-    }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-music {
-        margin-bottom: 2px !important;
-        height: 16px !important;
-        line-height: 16px !important;
+        padding: 6px 8px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-title {
         font-size: 12px !important;
-        line-height: 16px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-author {
-        display: none !important;
-    }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-controller {
-        position: relative !important;
-    }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-bar-wrap {
-        margin: 0 !important;
-    }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-time {
-        font-size: 10px !important;
-        position: absolute !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        height: auto !important;
-        padding: 0 !important;
-    }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-time .aplayer-icon {
         display: none !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon {
         width: 20px !important;
         height: 20px !important;
-        margin-left: 4px !important;
+        margin-left: 2px !important;
     }
     .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon svg {
         width: 16px !important;
         height: 16px !important;
     }
-    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon.aplayer-icon-menu {
-        display: block !important;
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon-volume {
+        display: none !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-time {
+        font-size: 10px !important;
+        min-width: 0 !important;
     }
 }
 </style>
@@ -182,7 +162,7 @@ function isMobile() {
 }
 
 function getMiniHeight() {
-    return isMobile() ? 58 : 77;
+    return isMobile() ? 60 : 77;
 }
 
 function getListHeight() {
