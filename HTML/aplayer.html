@@ -144,8 +144,12 @@ html, body {
     }
     .aplayer .aplayer-icon-volume,
     .aplayer .aplayer-icon-volume-down,
+    .aplayer .aplayer-icon-lrc,
     .aplayer .aplayer-volume-wrap {
         display: none !important;
+    }
+    .aplayer.aplayer-fixed .aplayer-list {
+        margin-bottom: 52px !important;
     }
     .aplayer .aplayer-time {
         display: flex !important;
@@ -208,9 +212,20 @@ var musicPlayer = new APlayer({
     ]
 });
 
+// 移动端退出 mini 窄条模式（窄条下按钮绝对定位会堆到左边）
+function exitNarrowMode() {
+    if (window.innerWidth > 768) return;
+    var container = document.querySelector('.aplayer');
+    if (container && container.classList.contains('aplayer-narrow')) {
+        container.classList.remove('aplayer-narrow');
+    }
+}
+exitNarrowMode();
+
 // 移动端强制覆盖 APlayer 布局
 function fixMobileLayout() {
     if (window.innerWidth > 768) return;
+    exitNarrowMode();
     var body = document.querySelector('.aplayer-body');
     if (!body) return;
     body.style.display = 'flex';
@@ -270,6 +285,7 @@ window.addEventListener('resize', fixMobileLayout);
 // 持续保持循环/随机按钮显示（APlayer 可能动态隐藏）
 setInterval(function() {
     if (window.innerWidth > 768) return;
+    exitNarrowMode();
     var loopBtn = document.querySelector('.aplayer-icon-loop');
     var orderBtn = document.querySelector('.aplayer-icon-order');
     if (loopBtn && loopBtn.style.display !== 'inline-block') {
@@ -289,7 +305,7 @@ function getListHeight() {
 }
 
 musicPlayer.on('listshow', function() {
-    var expandH = (isMobile() ? 48 : 77) + getListHeight() + 10;
+    var expandH = (isMobile() ? 52 : 77) + getListHeight() + 10;
     window.parent.postMessage({ type: 'aplayerResize', height: expandH }, '*');
     setTimeout(function() {
         var listH = getListHeight();
@@ -313,7 +329,7 @@ musicPlayer.on('listshow', function() {
 });
 
 musicPlayer.on('listhide', function() {
-    window.parent.postMessage({ type: 'aplayerResize', height: isMobile() ? 48 : 77 }, '*');
+    window.parent.postMessage({ type: 'aplayerResize', height: isMobile() ? 52 : 77 }, '*');
 });
 
 document.addEventListener('DOMContentLoaded', function() {
