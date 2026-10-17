@@ -64,6 +64,13 @@ html, body {
 .aplayer-withlrc {
     overflow: visible !important;
 }
+
+/* 仅手机端：隐藏窄条切换按钮，防止误触回到窄条模式 */
+@media (max-width: 768px) {
+    .aplayer-miniswitcher {
+        display: none !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -99,6 +106,15 @@ var musicPlayer = new APlayer({
         { name: 'One Last Kiss', url: '../MUSIC/One Last Kiss.mp3' }
     ]
 });
+
+// 仅手机端：退出 mini 窄条模式（窄条下控制按钮会堆到封面左边）
+function exitNarrowModeOnMobile() {
+    if (window.innerWidth > 768) return;
+    var container = document.querySelector('.aplayer');
+    if (container) container.classList.remove('aplayer-narrow');
+}
+exitNarrowModeOnMobile();
+window.addEventListener('resize', exitNarrowModeOnMobile);
 
 musicPlayer.on('listshow', function() {
     window.parent.postMessage({ type: 'aplayerResize', height: 450 }, '*');
