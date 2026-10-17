@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+<style>
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.aplayer-list {
+    max-height: 320px !important;
+    height: 320px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+}
+.aplayer-list-wrap {
+    max-height: 320px !important;
+    height: 320px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+.aplayer-list::-webkit-scrollbar {
+    width: 8px !important;
+    display: block !important;
+}
+.aplayer-list-wrap::-webkit-scrollbar {
+    width: 8px !important;
+    display: block !important;
+}
+.aplayer-list::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2) !important;
+    border-radius: 4px !important;
+}
+.aplayer-list-wrap::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2) !important;
+    border-radius: 4px !important;
+}
+.aplayer-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.5) !important;
+    border-radius: 4px !important;
+}
+.aplayer-list-wrap::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.5) !important;
+    border-radius: 4px !important;
+}
+.aplayer-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.7) !important;
+}
+.aplayer-list-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.7) !important;
+}
+.aplayer-list li {
+    height: 32px !important;
+    line-height: 32px !important;
+}
+.aplayer {
+    overflow: visible !important;
+}
+.aplayer-withlrc {
+    overflow: visible !important;
+}
+</style>
+</head>
+<body>
+<div id="musicPlayer"></div>
+<script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+<script>
+var musicPlayer = new APlayer({
+    container: document.getElementById('musicPlayer'),
+    fixed: true,
+    mini: true,
+    autoplay: false,
+    theme: '#e3f2f5',
+    loop: 'all',
+    order: 'random',
+    preload: 'auto',
+    volume: 0.4,
+    mutex: true,
+    listFolded: true,
+    listMaxHeight: 320,
+    audio: [
+        { name: '样YOUNG', url: '../MUSIC/样YOUNG.mp3' },
+        { name: '蒲公英的约定', url: '../MUSIC/蒲公英的约定.mp3' },
+        { name: '我怀念的', url: '../MUSIC/我怀念的.mp3' },
+        { name: '赐我', url: '../MUSIC/赐我.mp3' },
+        { name: '空空', url: '../MUSIC/空空.mp3' },
+        { name: '大眠', url: '../MUSIC/大眠.mp3' },
+        { name: '同花顺', url: '../MUSIC/同花顺.mp3' },
+        { name: '遇见', url: '../MUSIC/遇见.mp3' },
+        { name: '撒野', url: '../MUSIC/撒野.mp3' },
+        { name: '春よ,来い', url: '../MUSIC/春よ,来い.mp3' },
+        { name: 'Merry Christmas, Mr.Lawrence', url: '../MUSIC/Merry Christmas, Mr.Lawrence.mp3' },
+        { name: '乌托邦', url: '../MUSIC/乌托邦.mp3' },
+        { name: 'One Last Kiss', url: '../MUSIC/One Last Kiss.mp3' }
+    ]
+});
+
+musicPlayer.on('listshow', function() {
+    window.parent.postMessage({ type: 'aplayerResize', height: 450 }, '*');
+    setTimeout(function() {
+        var list = document.querySelector('.aplayer-list');
+        var listWrap = document.querySelector('.aplayer-list-wrap');
+        if (list) {
+            list.style.maxHeight = '350px';
+            list.style.height = '350px';
+            list.style.overflowY = 'auto';
+            list.style.overflowX = 'hidden';
+            addWheelPrevent(list);
+        }
+        if (listWrap) {
+            listWrap.style.maxHeight = '350px';
+            listWrap.style.height = '350px';
+            listWrap.style.overflowY = 'auto';
+            listWrap.style.overflowX = 'hidden';
+            addWheelPrevent(listWrap);
+        }
+    }, 100);
+});
+
+musicPlayer.on('listhide', function() {
+    window.parent.postMessage({ type: 'aplayerResize', height: 77 }, '*');
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var list = document.querySelector('.aplayer-list');
+        var listWrap = document.querySelector('.aplayer-list-wrap');
+        if (list) {
+            list.style.maxHeight = '320px';
+            list.style.height = '320px';
+            list.style.overflowY = 'auto';
+            list.style.overflowX = 'hidden';
+            addWheelPrevent(list);
+        }
+        if (listWrap) {
+            listWrap.style.maxHeight = '320px';
+            listWrap.style.height = '320px';
+            listWrap.style.overflowY = 'auto';
+            listWrap.style.overflowX = 'hidden';
+            addWheelPrevent(listWrap);
+        }
+    }, 500);
+});
+
+function addWheelPrevent(element) {
+    element.addEventListener('wheel', function(e) {
+        var scrollTop = element.scrollTop;
+        var scrollHeight = element.scrollHeight;
+        var clientHeight = element.clientHeight;
+        
+        if ((scrollTop === 0 && e.deltaY < 0) || 
+            (scrollTop >= scrollHeight - clientHeight - 1 && e.deltaY > 0)) {
+            e.preventDefault();
+        }
+        e.stopPropagation();
+    }, { passive: false });
+}
+</script>
+</body>
+</html>
