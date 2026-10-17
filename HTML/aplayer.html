@@ -126,14 +126,17 @@ html, body {
     .aplayer .aplayer-icon-back,
     .aplayer .aplayer-icon-play,
     .aplayer .aplayer-icon-forward,
-    .aplayer .aplayer-icon-menu {
+    .aplayer .aplayer-icon-menu,
+    .aplayer .aplayer-icon-loop,
+    .aplayer .aplayer-icon-order {
         position: static !important;
         right: auto !important;
         bottom: auto !important;
-        width: 18px !important;
-        height: 18px !important;
+        width: 16px !important;
+        height: 16px !important;
         margin: 0 1px !important;
         flex-shrink: 0 !important;
+        display: inline-block !important;
     }
     .aplayer .aplayer-icon svg {
         width: 14px !important;
@@ -236,15 +239,16 @@ function fixMobileLayout() {
         info.style.webkitTransform = 'none';
     }
 
-    var icons = document.querySelectorAll('.aplayer-icon-back, .aplayer-icon-play, .aplayer-icon-forward, .aplayer-icon-menu');
+    var icons = document.querySelectorAll('.aplayer-icon-back, .aplayer-icon-play, .aplayer-icon-forward, .aplayer-icon-menu, .aplayer-icon-loop, .aplayer-icon-order');
     icons.forEach(function(icon) {
         icon.style.position = 'static';
         icon.style.right = 'auto';
         icon.style.bottom = 'auto';
-        icon.style.width = '18px';
-        icon.style.height = '18px';
+        icon.style.width = '16px';
+        icon.style.height = '16px';
         icon.style.margin = '0 1px';
         icon.style.flexShrink = '0';
+        icon.style.display = 'inline-block';
     });
 
     var volumeWrap = document.querySelector('.aplayer-volume-wrap');
