@@ -249,6 +249,8 @@ function fixMobileLayout() {
         icon.style.margin = '0 1px';
         icon.style.flexShrink = '0';
         icon.style.display = 'inline-block';
+        icon.style.visibility = 'visible';
+        icon.style.opacity = '1';
     });
 
     var volumeWrap = document.querySelector('.aplayer-volume-wrap');
@@ -262,7 +264,21 @@ function fixMobileLayout() {
 
 setTimeout(fixMobileLayout, 800);
 setTimeout(fixMobileLayout, 2000);
+setTimeout(fixMobileLayout, 4000);
 window.addEventListener('resize', fixMobileLayout);
+
+// 持续保持循环/随机按钮显示（APlayer 可能动态隐藏）
+setInterval(function() {
+    if (window.innerWidth > 768) return;
+    var loopBtn = document.querySelector('.aplayer-icon-loop');
+    var orderBtn = document.querySelector('.aplayer-icon-order');
+    if (loopBtn && loopBtn.style.display !== 'inline-block') {
+        loopBtn.style.display = 'inline-block';
+    }
+    if (orderBtn && orderBtn.style.display !== 'inline-block') {
+        orderBtn.style.display = 'inline-block';
+    }
+}, 500);
 
 function isMobile() {
     return window.innerWidth <= 768;
