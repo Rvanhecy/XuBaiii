@@ -247,8 +247,10 @@ function fixMobileLayout() {
         icon.style.flexShrink = '0';
     });
 
-    var volume = document.querySelector('.aplayer-volume-wrap');
-    if (volume) volume.style.display = 'none';
+    var volumeWrap = document.querySelector('.aplayer-volume-wrap');
+    if (volumeWrap) volumeWrap.style.display = 'none';
+    var volIcons = document.querySelectorAll('.aplayer-icon-volume, .aplayer-icon-volume-down');
+    volIcons.forEach(function(v) { v.style.display = 'none'; });
 
     var miniswitcher = document.querySelector('.aplayer-miniswitcher');
     if (miniswitcher) miniswitcher.style.display = 'none';
