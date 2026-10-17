@@ -69,6 +69,21 @@ html, body {
 .ua-mobile .aplayer-miniswitcher {
     display: none !important;
 }
+
+/* 仅手机设备：强制播放器保持展开态并禁用过渡动画。
+   APlayer 构造时先加窄条类、我们随后移除，但过渡动画可能被冻结在起始帧
+   （iframe 后台节流时），导致按钮堆在封面左侧、进度条被挤出可视区 */
+.ua-mobile .aplayer.aplayer-fixed .aplayer-body {
+    transition: none !important;
+    width: auto !important;
+}
+.ua-mobile .aplayer.aplayer-fixed .aplayer-info {
+    transition: none !important;
+    transform: none !important;
+}
+.ua-mobile .aplayer.aplayer-narrow .aplayer-list {
+    display: block !important;
+}
 </style>
 </head>
 <body>
