@@ -125,9 +125,8 @@ if (isMobileDevice) {
     }
 }
 
-// 仅电脑端：去掉无功能的歌词(lrc)图标，把 单曲循环/顺序播放/随机播放 合并为一个可点击切换的按钮
+// 双端通用：去掉无功能的歌词(lrc)图标，把 单曲循环/顺序播放/随机播放 合并为一个可点击切换的按钮
 (function() {
-    if (isMobileDevice) return;
     var loopIcon = document.querySelector('.aplayer-icon-loop');
     var orderIcon = document.querySelector('.aplayer-icon-order');
     var lrcIcon = document.querySelector('.aplayer-icon-lrc');
