@@ -64,6 +64,20 @@ html, body {
 .aplayer-withlrc {
     overflow: visible !important;
 }
+@media (max-width: 768px) {
+    .aplayer-list {
+        max-height: 45vh !important;
+        height: 45vh !important;
+    }
+    .aplayer-list-wrap {
+        max-height: 45vh !important;
+        height: 45vh !important;
+    }
+    .aplayer-list li {
+        height: 36px !important;
+        line-height: 36px !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -100,21 +114,33 @@ var musicPlayer = new APlayer({
     ]
 });
 
+function getListHeight() {
+    var isMobile = window.innerWidth <= 768;
+    return isMobile ? Math.floor(window.innerHeight * 0.45) : 320;
+}
+
+function getExpandHeight() {
+    var listH = getListHeight();
+    return 77 + listH + 10;
+}
+
 musicPlayer.on('listshow', function() {
-    window.parent.postMessage({ type: 'aplayerResize', height: 450 }, '*');
+    var expandH = getExpandHeight();
+    window.parent.postMessage({ type: 'aplayerResize', height: expandH }, '*');
     setTimeout(function() {
         var list = document.querySelector('.aplayer-list');
         var listWrap = document.querySelector('.aplayer-list-wrap');
+        var listH = getListHeight();
         if (list) {
-            list.style.maxHeight = '350px';
-            list.style.height = '350px';
+            list.style.maxHeight = listH + 'px';
+            list.style.height = listH + 'px';
             list.style.overflowY = 'auto';
             list.style.overflowX = 'hidden';
             addWheelPrevent(list);
         }
         if (listWrap) {
-            listWrap.style.maxHeight = '350px';
-            listWrap.style.height = '350px';
+            listWrap.style.maxHeight = listH + 'px';
+            listWrap.style.height = listH + 'px';
             listWrap.style.overflowY = 'auto';
             listWrap.style.overflowX = 'hidden';
             addWheelPrevent(listWrap);
@@ -130,21 +156,34 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         var list = document.querySelector('.aplayer-list');
         var listWrap = document.querySelector('.aplayer-list-wrap');
+        var listH = getListHeight();
         if (list) {
-            list.style.maxHeight = '320px';
-            list.style.height = '320px';
+            list.style.maxHeight = listH + 'px';
+            list.style.height = listH + 'px';
             list.style.overflowY = 'auto';
             list.style.overflowX = 'hidden';
             addWheelPrevent(list);
         }
         if (listWrap) {
-            listWrap.style.maxHeight = '320px';
-            listWrap.style.height = '320px';
+            listWrap.style.maxHeight = listH + 'px';
+            listWrap.style.height = listH + 'px';
             listWrap.style.overflowY = 'auto';
             listWrap.style.overflowX = 'hidden';
             addWheelPrevent(listWrap);
         }
     }, 500);
+});
+
+window.addEventListener('resize', function() {
+    var frame = window.frameElement;
+    if (frame) {
+        var isListShown = document.querySelector('.aplayer-list') && 
+                          document.querySelector('.aplayer-list').offsetHeight > 0;
+        if (isListShown) {
+            var expandH = getExpandHeight();
+            window.parent.postMessage({ type: 'aplayerResize', height: expandH }, '*');
+        }
+    }
 });
 
 function addWheelPrevent(element) {
