@@ -111,7 +111,17 @@ var musicPlayer = new APlayer({
 function exitNarrowModeOnMobile() {
     if (window.innerWidth > 768) return;
     var container = document.querySelector('.aplayer');
-    if (container) container.classList.remove('aplayer-narrow');
+    if (!container) return;
+    container.classList.remove('aplayer-narrow');
+    // 兜底：APlayer 若异步把窄条加回来（手机网速慢时），立即再移除
+    if (!window.__narrowObserved) {
+        window.__narrowObserved = true;
+        new MutationObserver(function() {
+            if (window.innerWidth <= 768 && container.classList.contains('aplayer-narrow')) {
+                container.classList.remove('aplayer-narrow');
+            }
+        }).observe(container, { attributes: true, attributeFilter: ['class'] });
+    }
 }
 exitNarrowModeOnMobile();
 window.addEventListener('resize', exitNarrowModeOnMobile);
