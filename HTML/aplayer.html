@@ -65,11 +65,9 @@ html, body {
     overflow: visible !important;
 }
 
-/* 仅手机端：隐藏窄条切换按钮，防止误触回到窄条模式 */
-@media (max-width: 768px) {
-    .aplayer-miniswitcher {
-        display: none !important;
-    }
+/* 仅手机设备（按UA判断，电脑端放大网页不受影响）：隐藏窄条切换按钮 */
+.ua-mobile .aplayer-miniswitcher {
+    display: none !important;
 }
 </style>
 </head>
@@ -107,28 +105,29 @@ var musicPlayer = new APlayer({
     ]
 });
 
+// 手机设备判定：看 UA 而不是窗口宽度，电脑端放大网页不会误触手机逻辑
+var isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
+if (isMobileDevice) {
+    document.documentElement.classList.add('ua-mobile');
+}
+
 // 仅手机端：退出 mini 窄条模式（窄条下控制按钮会堆到封面左边）
-function exitNarrowModeOnMobile() {
-    if (window.innerWidth > 768) return;
-    var container = document.querySelector('.aplayer');
-    if (!container) return;
-    container.classList.remove('aplayer-narrow');
-    // 兜底：APlayer 若异步把窄条加回来（手机网速慢时），立即再移除
-    if (!window.__narrowObserved) {
-        window.__narrowObserved = true;
+if (isMobileDevice) {
+    var aplayerContainer = document.querySelector('.aplayer');
+    if (aplayerContainer) {
+        aplayerContainer.classList.remove('aplayer-narrow');
+        // 兜底：APlayer 若异步把窄条加回来（手机网速慢时），立即再移除
         new MutationObserver(function() {
-            if (window.innerWidth <= 768 && container.classList.contains('aplayer-narrow')) {
-                container.classList.remove('aplayer-narrow');
+            if (aplayerContainer.classList.contains('aplayer-narrow')) {
+                aplayerContainer.classList.remove('aplayer-narrow');
             }
-        }).observe(container, { attributes: true, attributeFilter: ['class'] });
+        }).observe(aplayerContainer, { attributes: true, attributeFilter: ['class'] });
     }
 }
-exitNarrowModeOnMobile();
-window.addEventListener('resize', exitNarrowModeOnMobile);
 
 // 仅电脑端：去掉无功能的歌词(lrc)图标，把 单曲循环/顺序播放/随机播放 合并为一个可点击切换的按钮
 (function() {
-    if (window.innerWidth <= 768) return;
+    if (isMobileDevice) return;
     var loopIcon = document.querySelector('.aplayer-icon-loop');
     var orderIcon = document.querySelector('.aplayer-icon-order');
     var lrcIcon = document.querySelector('.aplayer-icon-lrc');
