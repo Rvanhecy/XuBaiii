@@ -126,6 +126,45 @@ function exitNarrowModeOnMobile() {
 exitNarrowModeOnMobile();
 window.addEventListener('resize', exitNarrowModeOnMobile);
 
+// 仅电脑端：去掉无功能的歌词(lrc)图标，把 单曲循环/顺序播放/随机播放 合并为一个可点击切换的按钮
+(function() {
+    if (window.innerWidth <= 768) return;
+    var loopIcon = document.querySelector('.aplayer-icon-loop');
+    var orderIcon = document.querySelector('.aplayer-icon-order');
+    var lrcIcon = document.querySelector('.aplayer-icon-lrc');
+    if (!loopIcon || !orderIcon || !lrcIcon) return;
+
+    var modes = ['one', 'order', 'random'];   // 单曲循环 → 顺序播放 → 随机播放
+    var modeNames = { one: '单曲循环', order: '顺序播放', random: '随机播放' };
+    var current = 'random';                    // 对应初始配置 loop:'all' + order:'random'
+
+    function applyMode(target) {
+        var guard = 0;
+        var targetLoop = (target === 'one') ? 'one' : 'all';
+        while (musicPlayer.options.loop !== targetLoop && guard++ < 4) loopIcon.click();
+        if (target !== 'one' && musicPlayer.options.order !== target) orderIcon.click();
+    }
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'aplayer-icon';
+    function refreshIcon() {
+        btn.innerHTML = (current === 'one' ? loopIcon : orderIcon).innerHTML;
+        btn.title = '播放模式：' + modeNames[current];
+    }
+    btn.addEventListener('click', function() {
+        current = modes[(modes.indexOf(current) + 1) % modes.length];
+        applyMode(current);
+        refreshIcon();
+    });
+
+    lrcIcon.parentNode.insertBefore(btn, lrcIcon);
+    lrcIcon.style.display = 'none';
+    loopIcon.style.display = 'none';
+    orderIcon.style.display = 'none';
+    refreshIcon();
+})();
+
 musicPlayer.on('listshow', function() {
     window.parent.postMessage({ type: 'aplayerResize', height: 450 }, '*');
     setTimeout(function() {
