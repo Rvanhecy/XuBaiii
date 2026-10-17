@@ -77,6 +77,69 @@ html, body {
         height: 36px !important;
         line-height: 36px !important;
     }
+    /* 迷你播放器移动端适配 */
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-body {
+        flex-wrap: nowrap !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play {
+        width: 28px !important;
+        height: 28px !important;
+        margin: -14px 0 0 -14px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-pic .aplayer-play svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-info {
+        padding: 6px 8px 6px 8px !important;
+        height: 48px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-music {
+        margin-bottom: 2px !important;
+        height: 16px !important;
+        line-height: 16px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-title {
+        font-size: 12px !important;
+        line-height: 16px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-author {
+        display: none !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-controller {
+        position: relative !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-bar-wrap {
+        margin: 0 !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-time {
+        font-size: 10px !important;
+        position: absolute !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        height: auto !important;
+        padding: 0 !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-time .aplayer-icon {
+        display: none !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon {
+        width: 20px !important;
+        height: 20px !important;
+        margin-left: 4px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    .aplayer.aplayer-fixed.aplayer-mini .aplayer-icon.aplayer-icon-menu {
+        display: block !important;
+    }
 }
 </style>
 </head>
@@ -114,14 +177,20 @@ var musicPlayer = new APlayer({
     ]
 });
 
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
+function getMiniHeight() {
+    return isMobile() ? 58 : 77;
+}
+
 function getListHeight() {
-    var isMobile = window.innerWidth <= 768;
-    return isMobile ? Math.floor(window.innerHeight * 0.45) : 320;
+    return isMobile() ? Math.floor(window.innerHeight * 0.45) : 320;
 }
 
 function getExpandHeight() {
-    var listH = getListHeight();
-    return 77 + listH + 10;
+    return getMiniHeight() + getListHeight() + 10;
 }
 
 musicPlayer.on('listshow', function() {
@@ -149,7 +218,7 @@ musicPlayer.on('listshow', function() {
 });
 
 musicPlayer.on('listhide', function() {
-    window.parent.postMessage({ type: 'aplayerResize', height: 77 }, '*');
+    window.parent.postMessage({ type: 'aplayerResize', height: getMiniHeight() }, '*');
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -177,12 +246,10 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('resize', function() {
     var frame = window.frameElement;
     if (frame) {
-        var isListShown = document.querySelector('.aplayer-list') && 
-                          document.querySelector('.aplayer-list').offsetHeight > 0;
-        if (isListShown) {
-            var expandH = getExpandHeight();
-            window.parent.postMessage({ type: 'aplayerResize', height: expandH }, '*');
-        }
+        var listEl = document.querySelector('.aplayer-list');
+        var isListShown = listEl && listEl.offsetHeight > 0;
+        var h = isListShown ? getExpandHeight() : getMiniHeight();
+        window.parent.postMessage({ type: 'aplayerResize', height: h }, '*');
     }
 });
 
