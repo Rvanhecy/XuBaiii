@@ -65,19 +65,16 @@ html, body {
     overflow: visible !important;
 }
 
-/* 仅手机设备（按UA判断，电脑端放大网页不受影响）：隐藏窄条切换按钮 */
-.ua-mobile .aplayer-miniswitcher {
-    display: none !important;
-}
-
-/* 仅手机设备：强制播放器保持展开态并禁用过渡动画。
+/* 仅手机设备启动阶段（按UA判断，电脑端放大网页不受影响）：
+   强制播放器以展开态启动并禁用启动过渡动画。
    APlayer 构造时先加窄条类、我们随后移除，但过渡动画可能被冻结在起始帧
-   （iframe 后台节流时），导致按钮堆在封面左侧、进度条被挤出可视区 */
-.ua-mobile .aplayer.aplayer-fixed .aplayer-body {
+   （iframe 后台节流时），导致按钮堆在封面左侧、进度条被挤出可视区。
+   启动宽限期（约2秒）结束后 aplayer-boot 类移除，收缩键恢复正常使用 */
+.ua-mobile.aplayer-boot .aplayer.aplayer-fixed .aplayer-body {
     transition: none !important;
     width: auto !important;
 }
-.ua-mobile .aplayer.aplayer-fixed .aplayer-info {
+.ua-mobile.aplayer-boot .aplayer.aplayer-fixed .aplayer-info {
     transition: none !important;
     transform: none !important;
 }
@@ -126,18 +123,26 @@ if (isMobileDevice) {
     document.documentElement.classList.add('ua-mobile');
 }
 
-// 仅手机端：退出 mini 窄条模式（窄条下控制按钮会堆到封面左边）
+// 仅手机端：启动阶段退出 mini 窄条模式（窄条下控制按钮会堆到封面左边），
+// 启动宽限期结束后恢复正常，收缩键交还给用户自由收起/展开
 if (isMobileDevice) {
+    document.documentElement.classList.add('aplayer-boot');
     var aplayerContainer = document.querySelector('.aplayer');
     if (aplayerContainer) {
-        aplayerContainer.classList.remove('aplayer-narrow');
-        // 兜底：APlayer 若异步把窄条加回来（手机网速慢时），立即再移除
-        new MutationObserver(function() {
+        // 用 setMode 同步内部 mode 标记，否则收缩键第一次点击会无效
+        musicPlayer.setMode('normal');
+        // 兜底：启动阶段 APlayer 若异步把窄条加回来（手机网速慢时），立即再退出
+        var narrowGuard = new MutationObserver(function() {
             if (aplayerContainer.classList.contains('aplayer-narrow')) {
-                aplayerContainer.classList.remove('aplayer-narrow');
+                musicPlayer.setMode('normal');
             }
-        }).observe(aplayerContainer, { attributes: true, attributeFilter: ['class'] });
+        });
+        narrowGuard.observe(aplayerContainer, { attributes: true, attributeFilter: ['class'] });
     }
+    setTimeout(function() {
+        if (typeof narrowGuard !== 'undefined') narrowGuard.disconnect();
+        document.documentElement.classList.remove('aplayer-boot');
+    }, 2000);
 }
 
 // 双端通用：去掉无功能的歌词(lrc)图标，把 单曲循环/顺序播放/随机播放 合并为一个可点击切换的按钮
