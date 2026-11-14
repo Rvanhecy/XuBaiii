@@ -15,6 +15,47 @@ const DB = {
   },
 
   // ============================================
+  // 后端数据同步
+  // ============================================
+  // 把服务端快照写入本地缓存（启动时、切回标签页时调用）
+  hydrate: function(snapshot) {
+    if (!snapshot) return;
+    const writeList = (key, list) => {
+      if (Array.isArray(list)) localStorage.setItem(key, JSON.stringify(list));
+    };
+    writeList(this.KEYS.ARTICLES, snapshot.articles);
+    writeList(this.KEYS.COMMENTS, snapshot.comments);
+    writeList(this.KEYS.MESSAGES, snapshot.messages);
+    writeList(this.KEYS.TAGS, snapshot.tags);
+    writeList(this.KEYS.CATEGORIES, snapshot.categories);
+
+    // 收藏是个人数据，只有登录后服务端才会返回
+    if (localStorage.getItem('xubaiwu_token')) {
+      writeList(this.KEYS.FAVORITES, snapshot.favorites);
+    }
+
+    // 用户和资料采用合并而不是覆盖，避免冲掉本机还没迁移的账号
+    if (Array.isArray(snapshot.users)) {
+      const merged = {};
+      this.getUsers().forEach(user => { merged[user.username] = user; });
+      snapshot.users.forEach(user => {
+        merged[user.username] = Object.assign({}, merged[user.username] || {}, user);
+      });
+      localStorage.setItem(this.KEYS.USERS, JSON.stringify(Object.values(merged)));
+    }
+    if (snapshot.profiles) {
+      localStorage.setItem(this.KEYS.PROFILES, JSON.stringify(Object.assign({}, this.getProfiles(), snapshot.profiles)));
+    }
+  },
+
+  // 写操作上报服务端（后台同步，失败不影响界面）
+  syncPush: function(path, method, body) {
+    if (typeof API !== 'undefined' && API.push) {
+      API.push(path, method, body);
+    }
+  },
+
+  // ============================================
   // 初始化和数据迁移
   // ============================================
   init: function() {
@@ -458,16 +499,18 @@ const DB = {
       articles.unshift(article);
     }
     localStorage.setItem(this.KEYS.ARTICLES, JSON.stringify(articles));
+    this.syncPush('/api/articles', 'POST', { article: article });
     return article;
   },
 
   deleteArticle: function(id) {
     const articles = this.getArticles().filter(a => a.id !== id);
     localStorage.setItem(this.KEYS.ARTICLES, JSON.stringify(articles));
-    
+
     const favorites = this.getFavorites();
     const newFavorites = favorites.filter(f => f.articleId !== id);
     localStorage.setItem(this.KEYS.FAVORITES, JSON.stringify(newFavorites));
+    this.syncPush('/api/articles/' + encodeURIComponent(id), 'DELETE');
   },
 
   // ============================================
@@ -491,6 +534,7 @@ const DB = {
         createdAt: new Date().toISOString()
       });
       localStorage.setItem(this.KEYS.FAVORITES, JSON.stringify(favorites));
+      this.syncPush('/api/favorites', 'POST', { articleId: articleId });
     }
   },
 
@@ -498,6 +542,7 @@ const DB = {
     const favorites = this.getFavorites();
     const newFavorites = favorites.filter(f => !(f.username === username && f.articleId === articleId));
     localStorage.setItem(this.KEYS.FAVORITES, JSON.stringify(newFavorites));
+    this.syncPush('/api/favorites/' + encodeURIComponent(articleId), 'DELETE');
   },
 
   isFavorite: function(username, articleId) {
@@ -556,12 +601,14 @@ const DB = {
       comments.unshift(comment);
     }
     localStorage.setItem(this.KEYS.COMMENTS, JSON.stringify(comments));
+    this.syncPush('/api/comments', 'POST', { comment: comment });
     return comment;
   },
 
   deleteComment: function(id) {
     const comments = this.getComments().filter(c => c.id !== id);
     localStorage.setItem(this.KEYS.COMMENTS, JSON.stringify(comments));
+    this.syncPush('/api/comments/' + encodeURIComponent(id), 'DELETE');
   },
 
   resetComments: function() {
@@ -595,12 +642,14 @@ const DB = {
       messages.unshift(message);
     }
     localStorage.setItem(this.KEYS.MESSAGES, JSON.stringify(messages));
+    this.syncPush('/api/messages', 'POST', { message: message });
     return message;
   },
 
   deleteMessage: function(id) {
     const messages = this.getMessages().filter(m => m.id !== id);
     localStorage.setItem(this.KEYS.MESSAGES, JSON.stringify(messages));
+    this.syncPush('/api/messages/' + encodeURIComponent(id), 'DELETE');
   },
 
   // ============================================
@@ -627,6 +676,7 @@ const DB = {
     const profiles = this.getProfiles();
     profiles[username] = profile;
     localStorage.setItem(this.KEYS.PROFILES, JSON.stringify(profiles));
+    this.syncPush('/api/profiles/' + encodeURIComponent(username), 'PUT', { profile: profile });
   },
 
   // ============================================

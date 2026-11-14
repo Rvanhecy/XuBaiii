@@ -1,0 +1,17 @@
+{
+  "name": "xubaiwu-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "叙白屋博客后端（共享数据）",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node scripts/seed.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "bcryptjs": "^2.4.3",
+    "hono": "^4.6.14"
+  }
+}

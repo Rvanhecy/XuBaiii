@@ -14,7 +14,17 @@ var myArticlesPage = 1;
 // ============================================
 // 应用初始化
 // ============================================
-function initApp() {
+async function initApp() {
+  // 后端可用时先拉一次共享数据快照，灌进本地缓存，后续渲染逻辑不用改
+  if (typeof API !== 'undefined') {
+    const localSnapshot = API.captureLocal();
+    await API.bootstrap();
+    if (API.online) {
+      promptLocalMigration(localSnapshot);
+      API.startAutoRefresh();
+    }
+  }
+
   DB.init();
   loadTheme();
   initCanvasBg();
@@ -24,6 +34,50 @@ function initApp() {
   
   checkCommentsData();
 }
+
+// 第一次连上后端时，询问是否把本地已有内容上传为共享数据
+function promptLocalMigration(localSnapshot) {
+  if (!API.needsMigration(localSnapshot)) return;
+
+  const articleCount = (localSnapshot.articles || []).length;
+  const confirmed = window.confirm(
+    '检测到你本地有 ' + articleCount + ' 篇文章。\n是否上传到共享服务器，让所有访问者都能看到？\n\n点“取消”则只保留在本地，不再询问。'
+  );
+  if (!confirmed) {
+    localStorage.setItem('xubaiwu_migrated_v1', '1');
+    return;
+  }
+
+  API.migrate(localSnapshot)
+    .then(function (res) {
+      const n = res.imported || {};
+      alert('上传完成：文章 ' + (n.articles || 0) + ' 篇，评论 ' + (n.comments || 0) + ' 条，留言 ' + (n.messages || 0) + ' 条');
+      return API.bootstrap();
+    })
+    .then(function () {
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (loadingScreen && loadingScreen.style.display === 'none') initMainApp();
+    })
+    .catch(function (err) {
+      alert('上传失败：' + err.message);
+    });
+}
+
+// 从别的设备/用户更新了数据后，重新渲染列表
+window.onRemoteDataRefreshed = function () {
+  const loadingScreen = document.getElementById('loadingScreen');
+  if (loadingScreen && loadingScreen.style.display !== 'none') return;
+  renderTagCloud();
+  renderCategories();
+  renderArticles();
+  renderDiscover();
+  renderUserCard();
+  renderLatestComments();
+  renderMyArticles();
+  renderSidebarCategories();
+  renderSidebarArchives();
+  renderProfile();
+};
 
 function checkCommentsData() {
   const comments = DB.getComments();
@@ -298,6 +352,25 @@ function doAuthLogin() {
   
   if (hasError) return;
   
+  // 后端可用时交给服务端校验，否则退回本地校验（纯前端模式）
+  if (typeof API !== 'undefined' && API.online) {
+    API.login(username, password)
+      .then(function (res) {
+        finishAuthLogin(res.user.username, res.user.phone);
+      })
+      .catch(function (err) {
+        if (err.status === 404) {
+          showFieldError('authLoginUser', 'loginUserError', 'loginUserErrorText', '该用户不存在，请先注册');
+          showFieldError('authLoginPass', 'loginPassError', 'loginPassErrorText', '');
+        } else if (err.status === 401) {
+          showFieldError('authLoginPass', 'loginPassError', 'loginPassErrorText', '密码错误');
+        } else {
+          showFieldError('authLoginPass', 'loginPassError', 'loginPassErrorText', err.message || '网络异常，请稍后重试');
+        }
+      });
+    return;
+  }
+
   const user = DB.getUserByNickname(username);
   if (!user) {
     showFieldError('authLoginUser', 'loginUserError', 'loginUserErrorText', '该用户不存在，请先注册');
@@ -310,7 +383,15 @@ function doAuthLogin() {
     return;
   }
   
-  DB.setCurrentUser(user.username);
+  finishAuthLogin(user.username, user.phone);
+}
+
+// 登录成功后的统一收尾（服务端模式和本地模式共用）
+function finishAuthLogin(username, phone) {
+  DB.setCurrentUser(username);
+  if (!DB.getUser(username)) {
+    DB.saveUser({ username: username, phone: phone || '' });
+  }
   showLoadingScreen();
   runProgressAnimation(() => {
     const loadingScreen = document.getElementById('loadingScreen');
@@ -370,9 +451,33 @@ function doAuthRegister() {
   }
   
   if (hasError) return;
-  
+
+  // 后端可用时在服务端创建账号（密码哈希存储），否则退回本地注册
+  if (typeof API !== 'undefined' && API.online) {
+    API.register({ username: username, phone: phone, password: password, avatar: DEFAULT_AVATAR_URL })
+      .then(function () {
+        finishAuthRegister(username, phone);
+      })
+      .catch(function (err) {
+        if (err.status === 409) {
+          showFieldError('authRegUser', 'regUserError', 'regUserErrorText', err.message || '用户名已存在');
+        } else {
+          showFieldError('authRegPass', 'regPassError', 'regPassErrorText', err.message || '网络异常，请稍后重试');
+        }
+      });
+    return;
+  }
+
   DB.saveUser({ username, phone, password });
+  finishAuthRegister(username, phone);
+}
+
+// 注册成功后的统一收尾（服务端模式和本地模式共用）
+function finishAuthRegister(username, phone) {
   DB.setCurrentUser(username);
+  if (!DB.getUser(username)) {
+    DB.saveUser({ username: username, phone: phone });
+  }
   DB.saveProfile(username, {
     bio: '这家伙很懒，什么都没留下~',
     avatar: DEFAULT_AVATAR_URL,
@@ -676,19 +781,33 @@ function doLogin() {
     return;
   }
   
+  if (typeof API !== 'undefined' && API.online) {
+    API.login(username, password)
+      .then(function (res) { finishLogin(res.user.username); })
+      .catch(function (err) {
+        if (err.status === 401) showFieldError('loginPass', '', '', '');
+        else alert(err.message || '网络异常，请稍后重试');
+      });
+    return;
+  }
+
   const user = DB.getUserByNickname(username);
   if (user && user.password === password) {
-    DB.setCurrentUser(user.username);
-    closeLogin();
-    updateAuthNav();
-    renderUserCard();
-    renderMyArticles();
-    showMusicPlayer();
+    finishLogin(user.username);
   } else {
     if (user) {
       showFieldError('loginPass', '', '', '');
     }
   }
+}
+
+function finishLogin(username) {
+  DB.setCurrentUser(username);
+  closeLogin();
+  updateAuthNav();
+  renderUserCard();
+  renderMyArticles();
+  showMusicPlayer();
 }
 
 function doRegister() {
@@ -711,12 +830,26 @@ function doRegister() {
     return;
   }
   
+  if (typeof API !== 'undefined' && API.online) {
+    API.register({ username: username, phone: phone, password: password, avatar: DEFAULT_AVATAR_URL })
+      .then(function () { finishRegister(username, phone); })
+      .catch(function (err) { alert(err.message || '注册失败，请稍后重试'); });
+    return;
+  }
+
   if (DB.getUser(username)) {
     return;
   }
   
   DB.saveUser({ username, phone, password });
+  finishRegister(username, phone);
+}
+
+function finishRegister(username, phone) {
   DB.setCurrentUser(username);
+  if (!DB.getUser(username)) {
+    DB.saveUser({ username: username, phone: phone });
+  }
   DB.saveProfile(username, {
     bio: '这家伙很懒，什么都没留下~',
     avatar: DEFAULT_AVATAR_URL,
@@ -735,6 +868,7 @@ function doRegister() {
 
 function logout() {
   DB.clearCurrentUser();
+  if (typeof API !== 'undefined') API.logout();
   updateAuthNav();
   renderUserCard();
   renderMyArticles();
