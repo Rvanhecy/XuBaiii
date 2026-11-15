@@ -4,8 +4,8 @@
 // 设计原则：接口不可用时自动退回纯本地模式，页面功能不受影响
 // ============================================
 var API = (function () {
-  // 部署后端后把地址填这里（例如 Cloudflare Workers 的域名）
-  // 留空时，线上站点会自动使用纯本地模式
+  // 前后端部署在同一个域名下时留空即可（会自动请求同域的 /api/*）
+  // 若后端单独部署，把域名填这里（例如 https://xxx.edgeone.run）
   var PROD_BASE = '';
 
   function resolveBase() {
@@ -38,7 +38,6 @@ var API = (function () {
 
   function request(path, options) {
     options = options || {};
-    if (!BASE) return Promise.reject(new Error('未配置后端地址'));
 
     var headers = Object.assign({ 'Content-Type': 'application/json' }, authHeaders(), options.headers || {});
     return fetch(BASE + path, {
